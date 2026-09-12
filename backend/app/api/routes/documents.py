@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
+from app.ai_module import InvoiceAIResult, extract_invoice_from_text
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.extracted_document import ExtractedDocument
@@ -46,3 +47,14 @@ def get_document(document_id: str, db: Session = Depends(get_db)) -> ExtractedDo
     if document is None:
         raise HTTPException(status_code=404, detail="Document not found")
     return document
+
+
+@router.post("/documents/{document_id}/extract-invoice", response_model=InvoiceAIResult)
+def extract_invoice_fields(document_id: str, db: Session = Depends(get_db)) -> InvoiceAIResult:
+    """Run the extracted document's raw text through the Claude-powered ai_module
+    to pull out structured invoice fields (supplier, amounts, dates, confidence)."""
+    document = db.get(ExtractedDocument, document_id)
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    return extract_invoice_from_text(document.extracted_text)
