@@ -28,6 +28,10 @@ class ExtractedAmountField(BaseModel):
 
 class InvoiceFields(BaseModel):
 
+    supplier_id: ExtractedTextField = Field(
+        default_factory=ExtractedTextField
+    )
+
     supplier_name: ExtractedTextField = Field(
         default_factory=ExtractedTextField
     )

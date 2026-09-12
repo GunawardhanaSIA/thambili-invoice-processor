@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchReviewInvoices } from "../api/client";
+import { approveInvoice, fetchReviewInvoices } from "../api/client";
 import { Modal } from "../components/Modal";
 import { StatusBadge } from "../components/StatusBadge";
 import type { ReviewInvoice } from "../types";
@@ -9,7 +9,6 @@ const COMPARE_FIELDS: { key: keyof ReviewInvoice; label: string }[] = [
   { key: "supplier_id", label: "Supplier ID" },
   { key: "supplier_name", label: "Supplier Name" },
   { key: "invoice_number", label: "Invoice Number" },
-  { key: "cost_centre", label: "Cost Centre" },
   { key: "currency", label: "Currency" },
 ];
 
@@ -23,6 +22,9 @@ function ReviewModal({
   onApprove: (updated: ReviewInvoice) => void;
 }) {
   const [draft, setDraft] = useState<ReviewInvoice>(invoice);
+  const [editableFields] = useState<Set<string>>(
+    () => new Set(COMPARE_FIELDS.filter(({ key }) => !invoice[key]).map(({ key }) => key)),
+  );
 
   const handleFieldChange = (key: keyof ReviewInvoice, value: string) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -61,11 +63,12 @@ function ReviewModal({
             {COMPARE_FIELDS.map(({ key, label }) => {
               const value = draft[key] as string;
               const isEmpty = !value;
+              const isEditable = editableFields.has(key);
               return (
                 <div className={isEmpty ? "detail-row detail-row-missing" : "detail-row"} key={key}>
                   <dt>{label}</dt>
                   <dd>
-                    {isEmpty ? (
+                    {isEditable ? (
                       <input
                         type="text"
                         className="field-input"
@@ -124,10 +127,14 @@ export function Dashboard() {
     };
   }, []);
 
-  const handleApprove = (updated: ReviewInvoice) => {
-    const approved = { ...updated, status: "Approved" as const, issue: "" };
-    setInvoices((prev) => prev.map((invoice) => (invoice.id === approved.id ? approved : invoice)));
-    setSelected(null);
+  const handleApprove = async (updated: ReviewInvoice) => {
+    try {
+      const approved = await approveInvoice(updated);
+      setInvoices((prev) => prev.filter((invoice) => invoice.id !== approved.id));
+      setSelected(null);
+    } catch {
+      setError("Failed to approve invoice. Please try again.");
+    }
   };
 
   return (
@@ -153,7 +160,6 @@ export function Dashboard() {
               <th className="numeric">Net Amount</th>
               <th className="numeric">Tax Amount</th>
               <th className="numeric">Gross Amount</th>
-              <th>Cost Centre</th>
               <th>Status</th>
               <th>Issue</th>
               <th>Actions</th>
@@ -168,7 +174,6 @@ export function Dashboard() {
                 <td className="numeric">{formatAmount(invoice.net_amount, invoice.currency)}</td>
                 <td className="numeric">{formatAmount(invoice.tax_amount, invoice.currency)}</td>
                 <td className="numeric">{formatAmount(invoice.gross_amount, invoice.currency)}</td>
-                <td className="muted">{invoice.cost_centre || "—"}</td>
                 <td>
                   <StatusBadge status={invoice.status} />
                 </td>

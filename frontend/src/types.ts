@@ -60,6 +60,7 @@ export interface AIField {
 }
 
 export interface InvoiceFields {
+  supplier_id: AIField;
   supplier_name: AIField;
   invoice_number: AIField;
   invoice_date: AIField;

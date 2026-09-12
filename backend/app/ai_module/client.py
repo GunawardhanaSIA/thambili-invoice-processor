@@ -62,7 +62,7 @@ class InvoiceLLMClient:
             response = self.client.messages.create(
                 model=self.model,
                 max_tokens=MAX_TOKENS,
-                output_config={"effort": "low"},
+                output_config={"effort": "medium"},
                 system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": user_content}],
             )
@@ -82,8 +82,8 @@ class InvoiceLLMClient:
 
         return content
 
-    def extract_text_invoice(self, invoice_text: str) -> str:
-        return self._create(build_text_prompt(invoice_text))
+    def extract_text_invoice(self, invoice_text: str, known_suppliers: str | None = None) -> str:
+        return self._create(build_text_prompt(invoice_text, known_suppliers))
 
     def extract_image_invoice(self, image_data_urls: list[str]) -> str:
         if not image_data_urls:
