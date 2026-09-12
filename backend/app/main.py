@@ -3,10 +3,24 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import documents, invoices, records, suppliers
 from app.core.config import settings
-from app.core.database import Base, engine
-from app.models import extracted_document, invoice, invoice_extraction  # noqa: F401 (registers the tables)
+from app.core.database import Base, SessionLocal, engine
+from app.models import (  # noqa: F401 (registers the tables)
+    existing_record,
+    extracted_document,
+    invoice,
+    invoice_extraction,
+    supplier,
+)
+from app.services.seed_data import seed_existing_records, seed_suppliers
 
 Base.metadata.create_all(bind=engine)
+
+_seed_db = SessionLocal()
+try:
+    seed_suppliers(_seed_db)
+    seed_existing_records(_seed_db)
+finally:
+    _seed_db.close()
 
 app = FastAPI(title="Thambili Invoice Processor API")
 

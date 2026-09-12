@@ -159,6 +159,8 @@ def build_review_warnings(
 
     optional_fields = [
 
+        "supplier_id",
+
         "due_date",
 
         "purchase_order_number",

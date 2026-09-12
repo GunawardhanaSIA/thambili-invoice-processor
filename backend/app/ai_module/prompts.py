@@ -21,16 +21,17 @@ YOUR TASK
 
 Extract the following invoice-level information:
 
-1. supplier_name
-2. invoice_number
-3. invoice_date
-4. due_date
-5. purchase_order_number
-6. currency
-7. subtotal
-8. tax_amount
-9. discount_amount
-10. total_amount
+1. supplier_id
+2. supplier_name
+3. invoice_number
+4. invoice_date
+5. due_date
+6. purchase_order_number
+7. currency
+8. subtotal
+9. tax_amount
+10. discount_amount
+11. total_amount
 
 
 FOR EVERY FIELD RETURN:
@@ -82,6 +83,19 @@ PO No
 PO Number
 Purchase Order
 Purchase Order No
+
+
+6b. A KNOWN SUPPLIERS list may be included in the user message, one
+supplier per line as:
+
+supplier_id | registered_name | trading_name
+
+If the invoice's supplier matches one of these entries (by registered
+name or trading name, ignoring case, punctuation, and legal suffixes
+such as "Pvt Ltd" / "Private Limited"), return that exact supplier_id.
+
+If no entry matches confidently, or no list was provided, return null
+for supplier_id. Never invent a supplier_id that is not in the list.
 
 
 7. Do NOT confuse the supplier with the buyer.
@@ -181,6 +195,12 @@ Do NOT include explanations before or after JSON.
 RETURN EXACTLY THIS GENERAL STRUCTURE:
 
 {
+    "supplier_id": {
+        "value": null,
+        "confidence": 0.0,
+        "evidence": null
+    },
+
     "supplier_name": {
         "value": null,
         "confidence": 0.0,
@@ -244,13 +264,28 @@ RETURN EXACTLY THIS GENERAL STRUCTURE:
 """
 
 
-def build_text_prompt(invoice_text: str) -> str:
+def build_known_suppliers_block(known_suppliers: str | None) -> str:
+
+    if not known_suppliers:
+        return ""
+
+    return f"""
+KNOWN SUPPLIERS
+Each line is one registered supplier: supplier_id | registered_name | trading_name.
+Match the invoice's supplier against this list per the rules above.
+
+{known_suppliers}
+
+"""
+
+
+def build_text_prompt(invoice_text: str, known_suppliers: str | None = None) -> str:
 
     return f"""
 Extract the required financial information from
 the following supplier invoice.
 
-DOCUMENT START
+{build_known_suppliers_block(known_suppliers)}DOCUMENT START
 ---------------------------------
 
 {invoice_text}

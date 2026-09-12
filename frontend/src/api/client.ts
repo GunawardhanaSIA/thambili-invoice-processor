@@ -33,6 +33,20 @@ export async function fetchExistingRecords(): Promise<ExistingRecord[]> {
   }
 }
 
+export async function approveInvoice(invoice: ReviewInvoice): Promise<ReviewInvoice> {
+  const { data } = await apiClient.post<ReviewInvoice>(`/invoices/${invoice.id}/approve`, {
+    supplier_id: invoice.supplier_id,
+    supplier_name: invoice.supplier_name,
+    invoice_number: invoice.invoice_number,
+    net_amount: invoice.net_amount,
+    tax_amount: invoice.tax_amount,
+    gross_amount: invoice.gross_amount,
+    cost_centre: invoice.cost_centre,
+    currency: invoice.currency,
+  });
+  return data;
+}
+
 export async function uploadInvoiceDocument(file: File): Promise<ExtractedDocument> {
   const formData = new FormData();
   formData.append("file", file);

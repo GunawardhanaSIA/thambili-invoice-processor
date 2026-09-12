@@ -322,6 +322,12 @@ def build_invoice_fields(
 
     cleaned = {
 
+        "supplier_id":
+            prepare_field(
+                data,
+                "supplier_id"
+            ),
+
         "supplier_name":
             prepare_field(
                 data,
@@ -493,6 +499,7 @@ def create_final_result(
 def extract_invoice_from_text(
     invoice_text: str,
     client: InvoiceLLMClient = None,
+    known_suppliers: str = None,
 ) -> InvoiceAIResult:
 
     if not invoice_text:
@@ -519,7 +526,8 @@ def extract_invoice_from_text(
 
         raw_response = (
             client.extract_text_invoice(
-                invoice_text
+                invoice_text,
+                known_suppliers,
             )
         )
 
