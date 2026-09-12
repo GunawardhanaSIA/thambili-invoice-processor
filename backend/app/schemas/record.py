@@ -6,6 +6,7 @@ class ExistingRecord(BaseModel):
     supplier_id: str
     supplier_name: str
     invoice_number: str
+    invoice_date: str
     date_entered: str
     net_amount: float
     tax_amount: float

@@ -4,7 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import documents, invoices, records, suppliers
 from app.core.config import settings
 from app.core.database import Base, engine
-from app.models import extracted_document  # noqa: F401 (registers the table)
+from app.models import (  # noqa: F401 (registers the tables)
+    extracted_document,
+    invoice,
+    parsed_invoice,
+    record,
+    supplier,
+)
 
 Base.metadata.create_all(bind=engine)
 

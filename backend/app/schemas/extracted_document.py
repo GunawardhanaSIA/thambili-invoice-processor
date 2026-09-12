@@ -8,6 +8,7 @@ class ExtractedDocumentOut(BaseModel):
 
     id: str
     filename: str
+    file_path: str
     pdf_type: str
     page_count: int
     extracted_text: str

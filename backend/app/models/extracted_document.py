@@ -18,6 +18,7 @@ class ExtractedDocument(Base):
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_new_id)
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    file_path: Mapped[str] = mapped_column(String(500), nullable=False)
     pdf_type: Mapped[str] = mapped_column(String(20), nullable=False)  # "text" or "scanned"
     page_count: Mapped[int] = mapped_column(Integer, nullable=False)
     extracted_text: Mapped[str] = mapped_column(Text, nullable=False)

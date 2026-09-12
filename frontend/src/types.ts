@@ -34,6 +34,7 @@ export interface ExistingRecord {
   supplier_id: string;
   supplier_name: string;
   invoice_number: string;
+  invoice_date: string;
   date_entered: string;
   net_amount: number;
   tax_amount: number;
