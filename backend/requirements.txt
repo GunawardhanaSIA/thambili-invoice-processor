@@ -4,3 +4,5 @@ python-multipart
 sqlalchemy
 pymupdf
 easyocr
+anthropic>=1.0.0
+python-dotenv>=1.0.0
