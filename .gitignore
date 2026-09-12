@@ -1,0 +1,38 @@
+# Python virtual environments (however they get created/named)
+.venv/
+venv/
+env/
+ENV/
+Lib/
+Scripts/
+Include/
+pyvenv.cfg
+__pycache__/
+*.pyc
+*.pyo
+
+# Env files (secrets/local config)
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local invoice data (not committed - see backend/data/README.md if present)
+backend/data/invoices/*
+!backend/data/invoices/.gitkeep
+backend/data/*.csv
