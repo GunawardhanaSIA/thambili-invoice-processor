@@ -43,3 +43,51 @@ export interface ExistingRecord {
   currency: string;
   cost_centre: string;
 }
+
+export interface ExtractedDocument {
+  id: string;
+  filename: string;
+  pdf_type: string;
+  page_count: number;
+  extracted_text: string;
+  created_at: string;
+}
+
+export interface AIField {
+  value: string | number | null;
+  confidence: number;
+  evidence: string | null;
+}
+
+export interface InvoiceFields {
+  supplier_name: AIField;
+  invoice_number: AIField;
+  invoice_date: AIField;
+  due_date: AIField;
+  purchase_order_number: AIField;
+  currency: AIField;
+  subtotal: AIField;
+  tax_amount: AIField;
+  discount_amount: AIField;
+  total_amount: AIField;
+}
+
+export interface AIWarning {
+  code: string;
+  message: string;
+  severity: string;
+  field?: string | null;
+}
+
+export interface InvoiceExtraction {
+  id: string;
+  document_id: string;
+  success: boolean;
+  fields: InvoiceFields;
+  overall_confidence: number;
+  confidence_level: "HIGH" | "MEDIUM" | "LOW";
+  requires_review: boolean;
+  warnings: AIWarning[];
+  error?: string | null;
+  created_at: string;
+}

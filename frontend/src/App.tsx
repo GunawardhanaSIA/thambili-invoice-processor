@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { Dashboard } from "./pages/Dashboard";
 import { ExistingRecords } from "./pages/ExistingRecords";
+import { ExtractInvoice } from "./pages/ExtractInvoice";
 import { Suppliers } from "./pages/Suppliers";
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<Dashboard />} />
+        <Route path="extract" element={<ExtractInvoice />} />
         <Route path="suppliers" element={<Suppliers />} />
         <Route path="existing-records" element={<ExistingRecords />} />
       </Route>

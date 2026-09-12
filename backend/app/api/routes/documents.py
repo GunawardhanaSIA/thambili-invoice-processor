@@ -5,6 +5,7 @@ from app.ai_module import extract_invoice_from_text
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.extracted_document import ExtractedDocument
+from app.models.invoice import Invoice
 from app.models.invoice_extraction import InvoiceExtraction
 from app.schemas.extracted_document import ExtractedDocumentOut
 from app.schemas.invoice_extraction import InvoiceExtractionOut
@@ -75,6 +76,24 @@ def extract_invoice_fields(document_id: str, db: Session = Depends(get_db)) -> I
     db.add(extraction)
     db.commit()
     db.refresh(extraction)
+
+    if result.success:
+        fields = result.fields
+        invoice = Invoice(
+            document_id=document.id,
+            extraction_id=extraction.id,
+            supplier_name=fields.supplier_name.value or "",
+            invoice_number=fields.invoice_number.value or "",
+            net_amount=fields.subtotal.value or 0.0,
+            tax_amount=fields.tax_amount.value or 0.0,
+            gross_amount=fields.total_amount.value or 0.0,
+            currency=fields.currency.value or "",
+            status="Needs Attention" if result.requires_review else "Pending Review",
+            issue=result.warnings[0].message if result.warnings else "",
+        )
+        db.add(invoice)
+        db.commit()
+
     return extraction
 
 
