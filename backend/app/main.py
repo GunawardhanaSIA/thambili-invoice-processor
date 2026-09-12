@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import invoices, records, suppliers
+from app.api.routes import documents, invoices, records, suppliers
 from app.core.config import settings
+from app.core.database import Base, engine
+from app.models import extracted_document  # noqa: F401 (registers the table)
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Thambili Invoice Processor API")
 
@@ -14,6 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(documents.router, prefix=settings.api_prefix)
 app.include_router(invoices.router, prefix=settings.api_prefix)
 app.include_router(suppliers.router, prefix=settings.api_prefix)
 app.include_router(records.router, prefix=settings.api_prefix)
