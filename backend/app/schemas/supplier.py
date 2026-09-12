@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class Supplier(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     supplier_id: str
     registered_name: str
     trading_name: str

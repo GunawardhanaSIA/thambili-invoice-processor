@@ -10,6 +10,7 @@ from app.models.invoice_extraction import InvoiceExtraction
 from app.schemas.extracted_document import ExtractedDocumentOut
 from app.schemas.invoice_extraction import InvoiceExtractionOut
 from app.services.pdf_extraction import extract_pdf_text
+from app.services.supplier_matching import match_supplier_id
 
 router = APIRouter(tags=["documents"])
 
@@ -82,6 +83,7 @@ def extract_invoice_fields(document_id: str, db: Session = Depends(get_db)) -> I
         invoice = Invoice(
             document_id=document.id,
             extraction_id=extraction.id,
+            supplier_id=match_supplier_id(db, fields.supplier_name.value),
             supplier_name=fields.supplier_name.value or "",
             invoice_number=fields.invoice_number.value or "",
             net_amount=fields.subtotal.value or 0.0,

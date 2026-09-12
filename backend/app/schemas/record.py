@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class ExistingRecord(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     record_id: str
     supplier_id: str
     supplier_name: str
