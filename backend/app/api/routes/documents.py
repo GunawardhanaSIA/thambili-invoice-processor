@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
-from app.ai_module import InvoiceAIResult, extract_invoice_from_text
+from app.ai_module import extract_invoice_from_text
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.extracted_document import ExtractedDocument
+from app.models.invoice_extraction import InvoiceExtraction
 from app.schemas.extracted_document import ExtractedDocumentOut
+from app.schemas.invoice_extraction import InvoiceExtractionOut
 from app.services.pdf_extraction import extract_pdf_text
 
 router = APIRouter(tags=["documents"])
@@ -49,12 +51,43 @@ def get_document(document_id: str, db: Session = Depends(get_db)) -> ExtractedDo
     return document
 
 
-@router.post("/documents/{document_id}/extract-invoice", response_model=InvoiceAIResult)
-def extract_invoice_fields(document_id: str, db: Session = Depends(get_db)) -> InvoiceAIResult:
+@router.post("/documents/{document_id}/extract-invoice", response_model=InvoiceExtractionOut)
+def extract_invoice_fields(document_id: str, db: Session = Depends(get_db)) -> InvoiceExtraction:
     """Run the extracted document's raw text through the Claude-powered ai_module
-    to pull out structured invoice fields (supplier, amounts, dates, confidence)."""
+    to pull out structured invoice fields (supplier, amounts, dates, confidence),
+    and persist the result."""
     document = db.get(ExtractedDocument, document_id)
     if document is None:
         raise HTTPException(status_code=404, detail="Document not found")
 
-    return extract_invoice_from_text(document.extracted_text)
+    result = extract_invoice_from_text(document.extracted_text)
+
+    extraction = InvoiceExtraction(
+        document_id=document.id,
+        success=result.success,
+        fields=result.fields.model_dump(mode="json"),
+        overall_confidence=result.overall_confidence,
+        confidence_level=result.confidence_level,
+        requires_review=result.requires_review,
+        warnings=[w.model_dump(mode="json") for w in result.warnings],
+        error=result.error,
+    )
+    db.add(extraction)
+    db.commit()
+    db.refresh(extraction)
+    return extraction
+
+
+@router.get("/documents/{document_id}/invoice-extraction", response_model=InvoiceExtractionOut)
+def get_invoice_extraction(document_id: str, db: Session = Depends(get_db)) -> InvoiceExtraction:
+    """Return the most recent stored AI extraction for a document, without
+    re-calling Claude."""
+    extraction = (
+        db.query(InvoiceExtraction)
+        .filter(InvoiceExtraction.document_id == document_id)
+        .order_by(InvoiceExtraction.created_at.desc())
+        .first()
+    )
+    if extraction is None:
+        raise HTTPException(status_code=404, detail="No invoice extraction found for this document")
+    return extraction
